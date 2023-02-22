@@ -18,6 +18,7 @@
 </head>
 <body>
     <p>Tylko martwi ujrzeli koniec wojny - Planton<br></p>
+    <a href="rejestracja.php">Załóż konto</a><br>
     <form action="zaloguj.php" method="post">
         Login:<br><input type="text" name="login"><br>
         Hasło:<br><input type="password" name="password"><br><br>
