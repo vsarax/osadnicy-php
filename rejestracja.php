@@ -54,11 +54,63 @@
             $_SESSION['e_bot']="Potwierdź, że nie jesteś botem";
         }
 
-        if($success==true)
+        $_SESSION['form_login']=$login;
+        $_SESSION['form_email']=$email;
+        if(isset($_POST['rules']))
         {
-            echo "Udana walidacja";
-            exit();
+            $_SESSION['form_rules']=true;
         }
+        require_once "connect.php";
+
+        try
+        {
+            $connection=new mysqli($host, $db_user, $db_password, $db_name);
+            if ($connection->connect_errno!=0)
+            {
+                throw new Exception(mysqli_connect_errno());
+            }
+            else 
+            {
+                $result=$connection->query("SELECT id FROM uzytkownicy WHERE email='$email'");
+                if(!$result) throw new Exception($connection->error);
+                $mails_num=$result->num_rows;
+                if($mails_num>0)
+                {
+                    $success=false;
+                    $_SESSION['e_email']="Istnieje już konto przypisane do tego adresu e-mail!";
+                }
+
+                $result=$connection->query("SELECT id FROM uzytkownicy WHERE user='$login'");
+                if(!$result) throw new Exception($connection->error);
+                $logins_num=$result->num_rows;
+                if($logins_num>0)
+                {
+                    $success=false;
+                    $_SESSION['e_login']="Podany login już istnieje";
+                }
+
+                if($success==true)
+                {
+                    if ($connection->query("INSERT INTO uzytkownicy VALUES (NULL, '$login', '$password_hash', '$email', 100, 100, 100, 14)"))
+                    {
+                        $_SESSION['newaccount']=true;
+                        header('Location: witamy.php');
+                    }
+                    else
+                    {
+                        throw new Exception($polaczenie->error);
+                    }
+                }
+
+                $connection->close();
+            }
+        }
+        catch(Exception $e)
+        {
+            echo '<p class="error">Błąd serwera, przepraszamy!</p>';
+            //echo 'Informacja developerska'.$e;
+        }
+
     }
 ?>
 
@@ -74,14 +126,26 @@
 </head>
 <body>
     <form method="post">
-        Login: <br><input type="text" name="login"><br>
+        Login: <br><input type="text" value="<?php
+        if(isset($_SESSION['form_login']))
+        {
+            echo $_SESSION['form_login'];
+            unset($_SESSION['form_login']);
+        }
+        ?>" name="login"><br>
         <?php
             if(isset($_SESSION['e_login'])) {
                 echo '<div class="error">'.$_SESSION['e_login'].'</div>';
                 unset($_SESSION['e_login']);
             }
         ?>
-        E-mail: <br><input type="text" name="email"><br>
+        E-mail: <br><input type="text" value="<?php
+        if(isset($_SESSION['form_email']))
+        {
+            echo $_SESSION['form_email'];
+            unset($_SESSION['form_email']);
+        }
+        ?>"name="email"><br>
         <?php
             if(isset($_SESSION['e_email'])) {
                 echo '<div class="error">'.$_SESSION['e_email'].'</div>';
@@ -97,7 +161,13 @@
         ?>
         Powtórz hasło: <br><input type="password" name="password2"><br><br>
         <label>
-           <input type="checkbox" name="rules"> Akceptuję regulamin<br>
+           <input type="checkbox" name="rules" <?php
+           if(isset($_SESSION['form_rules']))
+           {
+            echo "checked";
+            unset($_SESSION['form_rules']);
+           }
+           ?>> Akceptuję regulamin<br>
         </label>
         <?php
             if(isset($_SESSION['e_rules'])) {
