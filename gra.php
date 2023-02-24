@@ -23,7 +23,7 @@
     echo "| <strong>Kamień</strong>: ".$_SESSION['kamien'];
     echo "| <strong>Zboze</strong>: ".$_SESSION['zboze']."</p>";
     echo "<p><strong>E-mail</strong>: ".$_SESSION['email'];
-    echo "br><strong>Dni premium</strong>: ".$_SESSION['dnipremium'];
+    echo "<br><strong>Dni premium</strong>: ".$_SESSION['dnipremium'];
 ?>
 </body>
 </html>

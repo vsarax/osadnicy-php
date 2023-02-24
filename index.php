@@ -1,7 +1,7 @@
 <?php
     session_start();
 
-    if(isset($_SESSION['loggedin']) && ($_SESSION['loggedin']==true))
+    if((isset($_SESSION['loggedin'])) && ($_SESSION['loggedin']==true))
     {
         header('Location: gra.php');
         exit();
@@ -25,11 +25,12 @@
         <input type="submit" value="Zaloguj się"/>
     </form>
 
-<?php
+    <?php
     if(isset($_SESSION['error']))
         {
-            echo $session['error'];
+            echo $_SESSION['error'];
         }
+    unset($_SESSION['error']);
 ?>
 </body>
 </html>
