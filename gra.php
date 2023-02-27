@@ -23,7 +23,18 @@
     echo "| <strong>Kamień</strong>: ".$_SESSION['kamien'];
     echo "| <strong>Zboze</strong>: ".$_SESSION['zboze']."</p>";
     echo "<p><strong>E-mail</strong>: ".$_SESSION['email'];
-    echo "<br><strong>Dni premium</strong>: ".$_SESSION['dnipremium'];
+    echo "<br><br><strong>Data wygaśnięcia premium</strong>: ".$_SESSION['dnipremium'];
+
+    echo time()."<br>";
+    $datetime = new DateTime();
+    
+    $premiumend = DateTime::createFromFormat('Y-m-d H:i:s', $_SESSION['dnipremium']);
+    $difference = $datetime->diff($premiumend);
+
+    if ($datetime < $premiumend)
+    echo "<br>Pozostało premium ".$difference->format('%d dni, %h godz, %i min');
+    else
+    echo "<br>Premium nieaktywne od ".$difference->format('%d dni, %h godz, %i min');
 ?>
 </body>
 </html>
