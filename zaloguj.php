@@ -1,4 +1,4 @@
-<?php
+<?php 
     session_start();
 
     if ((!isset($_POST['login'])) || (!isset($_POST['password'])))
@@ -8,58 +8,66 @@
     }
 
     require_once "connect.php";
-
-    $connection = @new mysqli($host, $db_user, $db_password, $db_name);
-
-    if ($connection->connect_errno!=0)
+    try
     {
-        echo "Error: ".$connection->connect_errno;
-    }
-    else
-    {
-        $login = $_POST['login'];
-        $password = $_POST['password'];
+        $connection = new mysqli($host, $db_user, $db_password, $db_name);
         
-        $login = htmlentities($login, ENT_QUOTES, "UTF-8");
-
-        if ($result = @$connection->query(sprintf("SELECT * FROM uzytkownicy WHERE user='%s'",
-        mysqli_real_escape_string($connection, $login))))
+        if ($connection->connect_errno != 0)
         {
-            $users_num = $result->num_rows;
-            if($users_num>0)
+            throw new Exception(mysqli_connect_errno());
+        }
+        else
+        {
+            $login = $_POST['login'];
+            $password = $_POST['password'];
+            
+            $login = htmlentities($login, ENT_QUOTES, "UTF-8");
+
+            if ($result = $connection->query(sprintf("SELECT * FROM uzytkownicy WHERE user='%s'",
+            mysqli_real_escape_string($connection, $login))))
             {
-                $row = $result->fetch_assoc();
-
-                if(password_verify($password, $row['pass'])) 
+                $users_num = $result->num_rows;
+                if($users_num>0)
                 {
-                    $_SESSION['loggedin'] = true;
-                    $_SESSION['id'] = $row['id'];
-                    $_SESSION['user'] = $row['user'];
-                    $_SESSION['drewno'] = $row['drewno'];
-                    $_SESSION['kamien'] = $row['kamien'];
-                    $_SESSION['zboze'] = $row['zboze'];
-                    $_SESSION['email'] = $row['email'];
-                    $_SESSION['dnipremium'] = $row['dnipremium'];
+                    $row = $result->fetch_assoc();
 
-                    unset($_SESSION['error']);
-                    $result->free_result();
-                    header('Location: gra.php');
-                }
-                else 
-                {
+                    if(password_verify($password, $row['pass'])) 
+                    {
+                        $_SESSION['loggedin'] = true;
+                        $_SESSION['id'] = $row['id'];
+                        $_SESSION['user'] = $row['user'];
+                        $_SESSION['drewno'] = $row['drewno'];
+                        $_SESSION['kamien'] = $row['kamien'];
+                        $_SESSION['zboze'] = $row['zboze'];
+                        $_SESSION['email'] = $row['email'];
+                        $_SESSION['dnipremium'] = $row['dnipremium'];
+
+                        unset($_SESSION['error']);
+                        $result->free_result();
+                        header('Location: gra.php');
+                    }
+                    else 
+                    {
+                        $_SESSION['error']='<span style="color:red">
+                        Nieprawidłowy login lub haslo</span>';
+                        header('Location: index.php');
+                    } 
+                
+                } 
+                else {
                     $_SESSION['error']='<span style="color:red">
                     Nieprawidłowy login lub haslo</span>';
                     header('Location: index.php');
-                } 
-            
-             } 
-             else {
-                $_SESSION['error']='<span style="color:red">
-                Nieprawidłowy login lub haslo</span>';
-                header('Location: index.php');
-                }
+                    }
 
+            }
+            
+            $connection->close();
         }
-        $connection->close();
     }
-?>
+    catch(Exception $e)
+    {
+        echo '<p class="error">Błąd serwera, przepraszamy!</p>';
+    }
+
+?> 
